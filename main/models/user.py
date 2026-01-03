@@ -13,17 +13,23 @@ class StatusChoices(models.TextChoices):
 
 
 class User(AbstractUser):
-    
+    username = models.CharField(max_length=100,blank=True,null = True,unique=True)
     phone = models.CharField(max_length=13,unique=True,null=True,blank=True)
     status = models.CharField(choices=StatusChoices,default=StatusChoices.NEW)
     bio = models.TextField()
     image = models.ImageField(upload_to='user/')
 
     def __str__(self):
-        return self.phone
+        return self.username
     
-    def create_code(self):
-        code = random.choices(6,string.digits)
+    def create_code(self ):
+        
+        code = ''.join(random.choice(string.digits) for _ in range(6))
+
+        UserConfirmation.objects.create(
+            user = self,
+            code = code
+        )
         return code
 
     
@@ -38,12 +44,15 @@ class User(AbstractUser):
     
 
 
-class userconfirmation(models.Model):
+class UserConfirmation(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE)
     code = models.CharField(max_length=6)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
 
     def save(self,*args,**kwargs):
-        self.expires_at = self.created_at + timezone.timedelta(minutes=5)
+        self.expires_at = timezone.now() + timezone.timedelta(minutes=5)
         return super().save(*args,**kwargs)
+
+    def __str__(self):
+        return f'{self.user.username} - {self.code}'
