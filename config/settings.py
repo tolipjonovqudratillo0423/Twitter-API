@@ -32,7 +32,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    "unfold", 
+    "jazzmin", 
     "django.contrib.admin",
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -50,7 +50,7 @@ UNFOLD = {
     "SITE_TITLE": "Название вашего проекта",  # Заголовок в браузере
     "SITE_HEADER": "Админ-панель",           # Заголовок в шапке
     "SITE_ICON": "/static/logo.svg",         # Путь к логотипу (SVG/PNG)
-    "THEME": "light$ pip install drf-spectacular",  # "light", "dark" или "auto" (автоопределение)
+    "THEME": "dark",  # "light", "dark" или "auto" (автоопределение)
 }
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Your Project API',
@@ -146,7 +146,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Tashkent'
 
 USE_I18N = True
 
