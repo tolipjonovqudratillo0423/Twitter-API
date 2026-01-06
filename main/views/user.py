@@ -4,8 +4,9 @@ from django.contrib.auth import get_user_model
 from main.models import User,UserConfirmation,StatusChoices
 from rest_framework.response import Response
 from rest_framework import status
-from main.serializers import EmailSerializer,CodeSerializer,UserSerializer
-from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth import authenticate
+from main.serializers import EmailSerializer,CodeSerializer,RegisterSerializer,LoginSerializer
+from rest_framework.permissions import IsAuthenticated,AllowAny
 
 class SendEmail(APIView):
 
@@ -73,6 +74,8 @@ class ConfirmVerificationCode(APIView):
     
 class ResendCodeAPIView(APIView):
 
+    serializer_class = EmailSerializer
+
     def post(self,request):
 
         user = request.user
@@ -85,32 +88,74 @@ class ResendCodeAPIView(APIView):
                 message='You have got unexpired code or You have already VERIFIED'
             )
         
-    def resend_code(self,user):
-        
+    def resend_code(self, user):
         confirmation = user.confirmations.order_by('-created_at').first()
 
-        if confirmation.is_expired() and user.status == StatusChoices.NEW:
+        # ❗ hali code bo‘lmagan user
+        if confirmation is None and user.status == StatusChoices.NEW:
             code = user.create_code()
-            send_code(email=user.email,code=code)
+            send_code(email=user.email, code=code)
             return True
+
+        # ❗ code bor, lekin eskirgan
+        if confirmation and confirmation.is_expired() and user.status == StatusChoices.NEW:
+            code = user.create_code()
+            send_code(email=user.email, code=code)
+            return True
+
         return False
-    
 
 
 
 
 class SingUpAPIView(APIView):   
 
-    serializer_class = UserSerializer
+    permission_classes = [
+        IsAuthenticated,
+    ]
+    serializer_class = RegisterSerializer
 
     def post(self,request):
         user = request.user
 
-        serializer = self.serializer_class(user,data = request.data)
+        serializer = self.serializer_class(instance = user,data = request.data)
 
         serializer.is_valid(raise_exception=True)
-        user.save()
-
-        return ResponseMessage.success(message='User Updated Successfully')
-
+        if user.status == StatusChoices.VERIFIED:
+            serializer.save()
         
+            return ResponseMessage.success(message='User Updated Successfully')
+        return ResponseMessage.error(message='You need to verify your email first')
+
+class LogInAPIView(APIView):
+    
+    permission_classes = [
+        AllowAny,
+    ]
+    serializer_class = LoginSerializer
+
+    def post(self,request):
+
+        serializer = self.serializer_class(data = request.data)
+
+        if serializer.is_valid(raise_exception=True):
+            
+            username = serializer.validated_data.get('username')
+            password = serializer.validated_data.get('password')
+
+            user = authenticate(request,username=username,password=password)
+
+            if user is not None:
+                token = tokens(user)
+                return ResponseMessage.success(
+                    message='You Logged Successfully :)',
+                    data={
+                        'tokens':token
+                    }
+                )
+
+           
+        return ResponseMessage.error(
+            message='Username or Password is wrong'
+            
+        )

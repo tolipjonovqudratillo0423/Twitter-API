@@ -33,8 +33,8 @@ def tokens(user):
 
     data = {
         'token':{
-            'access':refresh.access_token,
-            'refresh':refresh,
+            'access':str(refresh.access_token),
+            'refresh':str(refresh)
         }
     }
 
