@@ -1,11 +1,10 @@
 from rest_framework.views import APIView
-from main.utils import send_code
+from main.utils import send_code,ResponseMessage,tokens
 from django.contrib.auth import get_user_model
 from main.models import User,UserConfirmation,StatusChoices
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework_simplejwt.tokens import RefreshToken
-from main.serializers import EmailSerializer,CodeSerializer
+from main.serializers import EmailSerializer,CodeSerializer,UserSerializer
 from rest_framework.permissions import IsAuthenticated
 
 class SendEmail(APIView):
@@ -15,27 +14,21 @@ class SendEmail(APIView):
 
     def post(self,request):
         
-      
-        
         serializer = self.serializer_class(data = request.data)
 
         serializer.is_valid(raise_exception=True)
 
         email = serializer.validated_data.get('email')
         user = User.objects.create(email=email)
-
         code = user.create_code()
 
         send_code(email=email,code=code)
 
-        refresh = RefreshToken.for_user(user)
+        token = tokens(user)
         data = {
             'status':True,
             'message':'Your Verification Code sent Succesfuly ',
-            'token':{
-                'access':str(refresh.access_token),
-                'refresh':str(refresh)
-            },
+            'token':token
             
         }
 
@@ -43,7 +36,10 @@ class SendEmail(APIView):
     
 
 class ConfirmVerificationCode(APIView):
+
+    permission_classes = [IsAuthenticated,]
     serializer_class=CodeSerializer
+
     def post(self,request):
 
         serializer=CodeSerializer(data = request.data)
@@ -74,4 +70,47 @@ class ConfirmVerificationCode(APIView):
 
         return Response({'message':'Code confirmed'},status=status.HTTP_200_OK)
 
+    
+class ResendCodeAPIView(APIView):
 
+    def post(self,request):
+
+        user = request.user
+
+        if self.resend_code(user):
+            return ResponseMessage.success(
+                message='Your Verification Code sent Successfully')
+        else:
+            return ResponseMessage.error(
+                message='You have got unexpired code or You have already VERIFIED'
+            )
+        
+    def resend_code(self,user):
+        
+        confirmation = user.confirmations.order_by('-created_at').first()
+
+        if confirmation.is_expired() and user.status == StatusChoices.NEW:
+            code = user.create_code()
+            send_code(email=user.email,code=code)
+            return True
+        return False
+    
+
+
+
+
+class SingUpAPIView(APIView):   
+
+    serializer_class = UserSerializer
+
+    def post(self,request):
+        user = request.user
+
+        serializer = self.serializer_class(user,data = request.data)
+
+        serializer.is_valid(raise_exception=True)
+        user.save()
+
+        return ResponseMessage.success(message='User Updated Successfully')
+
+        
