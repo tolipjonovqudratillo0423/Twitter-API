@@ -1,8 +1,18 @@
 from django.urls import path
-from main.views import SendEmail
+from rest_framework.routers import DefaultRouter
+
+from main.views import SendEmail,PostViewSet
 from main.views import ConfirmVerificationCode,ResendCodeAPIView,LogInAPIView,SingUpAPIView
 
-urlpatterns = [
+
+router = DefaultRouter()
+
+router.register('post',PostViewSet,basename='post')
+
+urlpatterns = router.urls
+
+urlpatterns += [
+    
     path('send_code/',SendEmail.as_view(),name='send_code'),
     path("verify_code/",ConfirmVerificationCode.as_view(),name='verify_code'),
     path("resend_code/",ResendCodeAPIView.as_view(),name='resend_code'),

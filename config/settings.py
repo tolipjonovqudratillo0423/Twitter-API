@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
      'drf_spectacular',
+     'silk'
 
 ]
 UNFOLD = {
@@ -81,6 +82,8 @@ EMAIL_USE_TLS = True
 
 
 MIDDLEWARE = [
+    'silk.middleware.SilkyMiddleware',
+
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -105,6 +108,7 @@ TEMPLATES = [
             ],
         },
     },
+    
 ]
 
 

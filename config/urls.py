@@ -19,9 +19,10 @@ from django.urls import path,include
 from django.conf.urls.static import static
 from django.conf import settings
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
-
+from main.utils import redirector
 
 urlpatterns = [
+    path('',redirector,name='redirector'),
     path('admin/', admin.site.urls),
     path('api/',include('main.urls')),
     # YOUR PATTERNS
@@ -30,6 +31,8 @@ urlpatterns = [
     path('swagger/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 ]
+
+urlpatterns += [path('silk/', include('silk.urls', namespace='silk'))]
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

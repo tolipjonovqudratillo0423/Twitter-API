@@ -6,6 +6,10 @@ from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 import re
+from django.shortcuts import redirect
+
+def redirector(request):
+    return redirect('swagger-ui')
 
 def send_code(email:str,code:int):
 

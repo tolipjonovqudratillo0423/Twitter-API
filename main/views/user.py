@@ -1,13 +1,15 @@
+from django.contrib.auth import authenticate
+from drf_spectacular.utils import extend_schema
 from rest_framework.views import APIView
-from main.utils import send_code,ResponseMessage,tokens
-from django.contrib.auth import get_user_model
-from main.models import User,UserConfirmation,StatusChoices
 from rest_framework.response import Response
 from rest_framework import status
-from django.contrib.auth import authenticate
-from main.serializers import EmailSerializer,CodeSerializer,RegisterSerializer,LoginSerializer
 from rest_framework.permissions import IsAuthenticated,AllowAny
 
+from main.utils import send_code,ResponseMessage,tokens
+from main.models import User,UserConfirmation,StatusChoices
+from main.serializers import EmailSerializer,CodeSerializer,RegisterSerializer,LoginSerializer
+
+@extend_schema(tags=['Auth'])
 class SendEmail(APIView):
 
     serializer_class = EmailSerializer
@@ -36,6 +38,7 @@ class SendEmail(APIView):
         return Response(data)
     
 
+@extend_schema(tags=['Auth'])
 class ConfirmVerificationCode(APIView):
 
     permission_classes = [IsAuthenticated,]
@@ -72,6 +75,7 @@ class ConfirmVerificationCode(APIView):
         return Response({'message':'Code confirmed'},status=status.HTTP_200_OK)
 
     
+@extend_schema(tags=['Auth'])
 class ResendCodeAPIView(APIView):
 
     serializer_class = EmailSerializer
@@ -106,8 +110,7 @@ class ResendCodeAPIView(APIView):
         return False
 
 
-
-
+@extend_schema(tags=['Auth'])
 class SingUpAPIView(APIView):   
 
     permission_classes = [
@@ -127,6 +130,7 @@ class SingUpAPIView(APIView):
             return ResponseMessage.success(message='User Updated Successfully')
         return ResponseMessage.error(message='You need to verify your email first')
 
+@extend_schema(tags=['Auth'])
 class LogInAPIView(APIView):
     
     permission_classes = [

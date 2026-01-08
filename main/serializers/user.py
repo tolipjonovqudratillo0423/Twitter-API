@@ -1,6 +1,5 @@
 from rest_framework import serializers 
 from main.models import User,StatusChoices
-from rest_framework.serializers import ModelSerializer
 from main.utils import is_email,is_valid_username
 
 class EmailSerializer(serializers.Serializer):
@@ -23,6 +22,8 @@ class EmailSerializer(serializers.Serializer):
     
 class CodeSerializer(serializers.Serializer):
     code = serializers.CharField(max_length=6)
+
+
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(max_length = 20)
@@ -108,12 +109,7 @@ class LoginSerializer(serializers.Serializer):
             value['username'] = user_input
     
         return value
-    
 
-
-   
-
-    
     
 
     
