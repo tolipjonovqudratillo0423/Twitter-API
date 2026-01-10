@@ -1,8 +1,11 @@
 db.sqlite3
 
 env
+.env
 
-__init__.py
+
 
 
 __pycache__
+
+static
